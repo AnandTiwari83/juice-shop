@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nvidia-driver-installer
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      name: nvidia-driver-installer
+  template:
+    metadata:
+      labels:
+        name: nvidia-driver-installer
+    spec:
+      containers:
+      - name: nvidia-driver-installer
+        image: ubuntu:20.04
+        securityContext:
+          privileged: true
+        command: ["/bin/bash", "-c"]
+        args:
+          - |
+            apt-get update && apt-get install -y wget && \
+            wget https://download.microsoft.com/download/7/e/c/7ec792c9-3654-4f78-b1a0-41a48e10ca6d/NVIDIA-Linux-x86_64-550.127.05-grid-azure.run && \
+            chmod +x NVIDIA-Linux-x86_64-550.127.05-grid-azure.run && \
+            ./NVIDIA-Linux-x86_64-550.127.05-grid-azure.run -s
+        volumeMounts:
+        - name: nvidia-driver
+          mountPath: /usr/local/nvidia
+      volumes:
+      - name: nvidia-driver
+        hostPath:
+          path: /usr/local/nvidia
